@@ -30,7 +30,7 @@ function MyApp({ Component, pageProps }) {
   }
   return <div className='dark flex flex-col min-h-[100vh] justify-center text-white'>
     <NavBar pages={PAGES}></NavBar>
-    <main className='grow p-4 bg-sky-900 flex flex-col'>
+    <main className='grow p-4 bg-sky-900'>
       <Component {...pageProps} />
     </main>
     <footer className={`dark:bg-gray-800 dark:border-t-gray-500 dark:border-x-0 dark:border-b-0 py-4 flex border border-[#eaeaea] justify-center items-center gap-3`}>

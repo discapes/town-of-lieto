@@ -15,7 +15,9 @@ h3 {
 p {
   @apply leading-relaxed mb-3;
 }
-
+button {
+  @apply border hover:bg-sky-800 px-3 py-1
+}
 
 a:hover, a:focus, a:active {
   text-decoration: hov

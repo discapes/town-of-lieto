@@ -1,8 +1,6 @@
 import { createRequire } from 'module';
 export const require = createRequire(import.meta.url);
 
-
-
 import { fileURLToPath } from 'url';
 const path = require('path');
 export const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -19,7 +17,12 @@ export function formatDate(date) {
     return [hh, mm, ss].map(n => String(n).padStart(2, '0')).join(':') + ' on ' + [d, m, y].join('.');
 }
 
-
+export function formatHHMMSS(date) {
+    let hh = date.getHours();
+    let mm = date.getMinutes();
+    let ss = date.getSeconds();
+    return [hh, mm, ss].map(n => String(n).padStart(2, '0')).join(':');
+}
 
 export class PingCounter {
     get avgPingsPerSec() {

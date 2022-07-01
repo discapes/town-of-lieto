@@ -1,68 +1,64 @@
-import { require, __dirname } from './util.js';
-const express = require('express');
-const fs = require('fs/promises');
-const path = require('path');
-const https = require('https')
-const app = express();
-import db, { pingDB } from './database.js';
-import { formatDate, PingCounter } from './util.js';
-import accountRouter from './account.js';
+import { formatHHMMSS, require, __dirname } from './util.js';
+import { WebSocketServer } from 'ws';
+import { Game, startGame } from './game.js';
 
-const DEV = process.env.NODE_ENV == 'dev';
+const port = 8000;
+const wss = new WebSocketServer({ port });
+const clientInfo = new Map();
+let games = [];
+let que = [];
 
-app.use(cors);
+function sendMsg(msg, ...uids) {
+    console.log("sending message '%s' to %s", msg, uids);
+    for (const uid of uids) {
+        clientInfo.get(uid).ws.send(JSON.stringify({ type: "msg", msg }));
+    }
+}
 
-app.use('/account', accountRouter);
+const getUniqueID = () => {
+    const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    return s4() + s4() + '-' + s4();
+};
 
-app.get('/hello', async (req, res) => {
-    res.json({
-        greeting: 'Server operating normally\n'
+function onmessage(uid, data) {
+    console.log("%s: '%s'", uid, data);
+}
+
+wss.on('connection', function connection(ws) {
+    const uid = getUniqueID();
+    console.log("connected " + uid);
+    const info = { ws, game: null };
+    clientInfo.set(uid, info);
+
+    ws.on("message", (data) => onmessage(uid, data));
+    ws.on("pong", () => ws.isAlive = true);
+
+    sendMsg("Added you to que", uid);
+    que.push(uid);
+    if (que.length >= 3) {
+        let game = new Game(que);
+        que.forEach(uid => clientInfo.get(uid).game = game);
+        games.push(game);
+        que = [];
+        startGame(game);
+    }
+
+    ws.on("close", () => {
+        clientInfo.delete(uid);
+        console.log("Client %s disconnected", uid);
     });
-})
-
-let highscores = [];
-setInterval(async () => {
-    highscores = (await db.aggregate([{ $sort: { score: -1 } }, { $limit: 30 }]).toArray()).map(p => ({ name: p.name, score: p.score }));
-}, 1000);
-
-
-app.get('/highscores', async (req, res) => {
-    res.json(highscores);
 });
 
-app.get('/info', async (req, res) => {
-    res.sendFile('info.html', { root: __dirname });
+const interval = setInterval(() => {
+    for (let ws of wss.clients) {
+        if (ws.isAlive === false) return ws.terminate();
+        ws.isAlive = false;
+        ws.ping();
+    }
+}, 10 * 1000);
+
+wss.on('close', () => {
+    clearInterval(interval);
 });
 
-app.get('/ilmoitukset', async (req, res) => {
-    res.set('version', 10);
-    res.sendFile('ilmoitukset.html', { root: __dirname });
-});
-
-
-
-app.use(errorHandler);
-let port = 8888;
-
-// let privateKey = await fs.readFile( 'privkey.pem' );
-// let certificate = await fs.readFile('cert.pem' );
-// https.createServer({
-//     key: privateKey,
-//     cert: certificate
-// }, app).listen(port, () => console.log(`Server listening on port ${port}`));
-app.listen(port, () => console.log(`Server listening on port ${port}`));
-
-
-
-function cors(req, res, next) {
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Expose-Headers', '*');
-    next();
-}
-
-function errorHandler(err, req, res, next) {
-    console.error(err);
-    if (DEV) res.send(err.stack);
-    else res.sendStatus(500);
-}
-
+console.log("Listening and initialized on port " + port);
