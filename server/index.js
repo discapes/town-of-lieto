@@ -1,51 +1,67 @@
-import { formatHHMMSS, require, __dirname } from './util.js';
+import { getUniqueID, __dirname } from './util.js';
 import { WebSocketServer } from 'ws';
-import { Game, startGame } from './game.js';
+import { Game } from './game.js';
 
 const port = 8000;
 const wss = new WebSocketServer({ port });
-const clientInfo = new Map();
-let games = [];
+const clients = new WeakSet();
+let games = new WeakSet();
 let que = [];
 
-function sendMsg(msg, ...uids) {
-    console.log("sending message '%s' to %s", msg, uids);
-    for (const uid of uids) {
-        clientInfo.get(uid).ws.send(JSON.stringify({ type: "msg", msg }));
+function sendTextMsg(msg, ...recipients) {
+    console.log("sending msg '%s' to %s", msg, recipients.map(c => c.uid));
+    for (const recipient of recipients) {
+        if (clients.has(recipient)) recipient.ws.send(JSON.stringify({ type: "msg", msg }))
     }
 }
 
-const getUniqueID = () => {
-    const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-    return s4() + s4() + '-' + s4();
-};
+function sendMessage(msg, ...recipients) {
+    console.log("sending message '%s' to %s", msg, recipients.map(c => c.uid));
+    for (const recipient of recipients) {
+        if (clients.has(recipient)) recipient.ws.send(msg);
+    }
+}
 
-function onmessage(uid, data) {
-    console.log("%s: '%s'", uid, data);
+function onmessage(client, data) {
+    console.log("%s: '%s'", client.uid, data);
+    if (client.game && games.has(client.game)) client.game.onmessage(client, data);
+}
+
+function gameEnded(game, players) {
+    games.delete(game);
+    const remainingClients = players.filter(p => clients.has(p));
+    remainingClients.forEach(c =>
+
+
+
+               c.ws.terminate());
 }
 
 wss.on('connection', function connection(ws) {
     const uid = getUniqueID();
     console.log("connected " + uid);
-    const info = { ws, game: null };
-    clientInfo.set(uid, info);
+    const client = { uid, ws, game: null };
+    clients.add(client);
 
-    ws.on("message", (data) => onmessage(uid, data));
+    ws.on("message", (data) => onmessage(client, data));
     ws.on("pong", () => ws.isAlive = true);
 
-    sendMsg("Added you to que", uid);
-    que.push(uid);
+    sendTextMsg("Added you to que.", client);
+    que.push(client);
     if (que.length >= 3) {
-        let game = new Game(que);
-        que.forEach(uid => clientInfo.get(uid).game = game);
-        games.push(game);
+        const players = [...que];
         que = [];
-        startGame(game);
+        const game = new Game(players, sendMessage, () => gameEnded(game, players));
+        players.forEach(c => c.game = game);
+        games.add(game);
+        game.start();
     }
 
     ws.on("close", () => {
-        clientInfo.delete(uid);
-        console.log("Client %s disconnected", uid);
+        if (client.game && games.has(client.game)) client.game.disconnected(client);
+        clients.delete(client);
+        que = que.filter(c => c !== client);
+        console.log("Client %s disconnected", client.uid);
     });
 });
 

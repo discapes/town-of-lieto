@@ -1,0 +1,31 @@
+{
+    "extends": [
+        "eslint:recommended",
+        "airbnb"
+    ],
+    "env": {
+        "node": true,
+        "es6": true
+    },
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "no-unused-vars": "off",
+        "no-console": "off",
+        "quotes": [ "error", "double", {
+                "avoidEscape": true,
+                "allowTemplateLiterals": true
+            } ],
+        "max-len": [ "warn", { "code": 180 } ],
+        "indent": ["error", "tab"],
+        "no-tabs": ["error", { "allowIndentationTabs": true} ],
+        "no-await-in-loop": [ "off" ],
+        "no-return-assign": [ "off" ],
+        "no-param-reassign": [ "error", { "props": false } ],
+        "no-restricted-syntax": [ "off" ],
+        "no-plusplus": [ "off" ],
+        "import/newline-after-import": [ "off" ]
+    }
+}

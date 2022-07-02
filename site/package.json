@@ -2,24 +2,19 @@
   "name": "town-of-lieto",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "server": "cross-env NODE_ENV=dev nodemon --inspect --watch server/ server/index.js",
+    "server": "cross-env NODE_ENV=dev nodemon --inspect --watch server server/index.mjs",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "nextstart": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "classnames": "^2.3.1",
-    "cross-env": "^7.0.3",
-    "express": "^4.18.1",
     "next": "12.2.0",
-    "nodemon": "^2.0.18",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "sass": "^1.53.0",
-    "ws": "^8.8.0"
+    "sass": "^1.53.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.7",
