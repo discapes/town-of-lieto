@@ -24,27 +24,27 @@ export function formatHHMMSS(date) {
 	return [hh, mm, ss].map((n) => String(n).padStart(2, "0")).join(":");
 }
 
-export class PingCounter {
-	get avgPingsPerSec() {
-		return this.#avgPingsPerSec;
-	}
+// export class PingCounter {
+// 	get avgPingsPerSec() {
+// 		return this.#avgPingsPerSec;
+// 	}
 
-	ping() {
-		this.pingsLastNSecs++;
-	}
+// 	ping() {
+// 		this.pingsLastNSecs++;
+// 	}
 
-	pingsLastNSecs = 0;
+// 	pingsLastNSecs = 0;
 
-	#avgPingsPerSec = 0;
+// 	#avgPingsPerSec = 0;
 
-	constructor(updateInterval) {
-		this.updateInterval = updateInterval;
-		setInterval(() => {
-			this.#avgPingsPerSec = Math.round(this.pingsLastNSecs / this.updateInterval);
-			this.pingsLastNSecs = 0;
-		}, this.updateInterval * 1000);
-	}
-}
+// 	constructor(updateInterval) {
+// 		this.updateInterval = updateInterval;
+// 		setInterval(() => {
+// 			this.#avgPingsPerSec = Math.round(this.pingsLastNSecs / this.updateInterval);
+// 			this.pingsLastNSecs = 0;
+// 		}, this.updateInterval * 1000);
+// 	}
+// }
 
 export const getUniqueID = () => {
 	const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);

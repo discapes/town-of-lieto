@@ -1,25 +1,10 @@
 import { delay, getUniqueID } from "./util";
 
 /*
-interface ClientID {
-	uid: string;
-}
 
-interface Game {
-	uid: string;
-	onmessage(): void;
-	async start(): void
-	constructor(playerids: ClientID[]), messageID: (msg: any, id: ClientID) => void, endGame: () => void);
-}
-interface Player {
-	id: ClientID
-	alive: bool;
-	role: Role;
-	name: string;
-	number: number;
-	printname:
-}
-type Role = "villager" | "investigator" | "mafioso";
+
+
+
 */
 
 // TODO
@@ -31,33 +16,65 @@ type Role = "villager" | "investigator" | "mafioso";
 	typescript
 */
 
+interface ClientID {
+	uid: string;
+};
+
+type Role = "villager" | "investigator" | "mafioso";
+
+type Player = {
+	id: ClientID
+	alive: boolean;
+	role: Role;
+	name: string;
+	number: number;
+	printname: string;
+	onmessage?: (msg: string, p: Player) => void;
+	dies: boolean;
+};
+
+interface Game {
+	uid: string;
+	onmessage(id: ClientID, message: any): void;
+	start(): void;
+	constructor(playerids: ClientID[], messageID: (msg: any, ...id: Array<ClientID>) 	 => void, endGame: () => void): Game;
+	disconnected(id: ClientID): void;
+}
+
 const delayTime = 1;
 const nameDelayTime = 1;
 const nightDelayTime = 1;
 const chatTime = 30;
 
-export default class Game {
+export default class MafiaGame implements Game {
 	uid = getUniqueID();
 
 	started = false;
 
 	playersByRole = new Map();
 
-	players = [];
+	players: Player[];
+	endGame;
+	send: (data: {}, ...players: Player[]) => void;
+	disconnected: (id: ClientID) => void;
+	onmessage: (id: ClientID, message: any) => void;
+	chatting : boolean = false;
+	ended : boolean = false; 
 
-	constructor(playerids, messageID, endGame) {
-		this.players = playerids.map((id) => ({ id }));
-		const playersByID = new WeakMap(this.players.map((p) => [p.id, p]));
+	constructor(playerids: ClientID[], messageID: (msg: any, ...id: ClientID[]) => void, endGame: () => void) {
+		this.players = playerids.map((id) => (<Player>{ id }));
+		const playersByID = new WeakMap<ClientID, Player>(this.players.map((p) => [p.id, p]));
 		this.endGame = endGame;
 
-		this.send = function send(data, ...players) {
+		this.send = function send(data: {}, ...players: Player[]): void {
 			messageID(JSON.stringify(data), ...players.map((p) => p.id));
 		};
-		this.onmessage = function onmessage(id, message) {
+		this.onmessage = function onmessage(id, message): void {
 			const player = playersByID.get(id);
+			if (player === undefined) return;
 			if (player.onmessage) {
 				const f = player.onmessage;
-				player.onmessage = null;
+				player.onmessage = undefined;
 				f(String(message), player);
 			} else if (this.chatting) {
 				this.bcText(`\t${player.name}: ${message}`);
@@ -65,8 +82,9 @@ export default class Game {
 				this.sendText(`\t- ${player.name}: ${message}`, this.players.filter((p) => !p.alive));
 			}
 		};
-		this.disconnected = function disconnected(id) {
+		this.disconnected = function disconnected(id: ClientID): void {
 			const player = playersByID.get(id);
+			if (player === undefined) return;
 			this.bcText(`${player.name || "anonymous"} disconnected.`);
 			player.alive = false;
 		};
@@ -80,7 +98,7 @@ export default class Game {
 		this.send({ type: "chatting" }, ...this.players);
 	}
 
-	bcText(text) {
+	bcText(text: string) {
 		this.sendText(text, ...this.players);
 	}
 
