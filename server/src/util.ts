@@ -1,13 +1,4 @@
-import { createRequire } from "module";
-import { fileURLToPath } from "url";
-
-
 export type OneOrMany<T> = T | T[];
-
-export const require = createRequire(import.meta.url);
-const path = require("path");
-export const DIRNAME = path.dirname(fileURLToPath(import.meta.url));
-
 export const delay = (s: number) => new Promise((resolve) => { setTimeout(resolve, s * 1000); });
 
 export function requiredNum(val: string | undefined) {
@@ -22,67 +13,35 @@ export function requiredBool(val: string | undefined) {
 	else return val == "true";
 }
 
-export function formatDate(date: Date) {
-	const y = date.getFullYear();
-	const m = date.getMonth();
-	const d = date.getDate();
-	const hh = date.getHours();
-	const mm = date.getMinutes();
-	const ss = date.getSeconds();
-	return `${[hh, mm, ss].map((n) => String(n).padStart(2, "0")).join(":")} on ${[d, m, y].join(".")}`;
-}
-
-export function formatHHMMSS(date: Date) {
-	const hh = date.getHours();
-	const mm = date.getMinutes();
-	const ss = date.getSeconds();
-	return [hh, mm, ss].map((n) => String(n).padStart(2, "0")).join(":");
-}
-
-// export class PingCounter {
-// 	get avgPingsPerSec() {
-// 		return this.#avgPingsPerSec;
-// 	}
-
-// 	ping() {
-// 		this.pingsLastNSecs++;
-// 	}
-
-// 	pingsLastNSecs = 0;
-
-// 	#avgPingsPerSec = 0;
-
-// 	constructor(updateInterval) {
-// 		this.updateInterval = updateInterval;
-// 		setInterval(() => {
-// 			this.#avgPingsPerSec = Math.round(this.pingsLastNSecs / this.updateInterval);
-// 			this.pingsLastNSecs = 0;
-// 		}, this.updateInterval * 1000);
-// 	}
-// }
-
 export const getUniqueID = () => {
 	const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 	return `${s4() + s4()}-${s4()}`;
 };
 
-export function shuffle(array: unknown[]) {
-	let currentIndex = array.length,  randomIndex;
-  
-	// While there remain elements to shuffle.
+export function shuffle(array: unknown[]) { // Fisher-Yates (aka Knuth) shuffle
+	let currentIndex = array.length, randomIndex;
 	while (currentIndex != 0) {
-  
-	  // Pick a remaining element.
-	  randomIndex = Math.floor(Math.random() * currentIndex);
-	  currentIndex--;
-  
-	  // And swap it with the current element.
-	  [array[currentIndex], array[randomIndex]] = [
-		array[randomIndex], array[currentIndex]];
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex--;
+		[array[currentIndex], array[randomIndex]] = [
+			array[randomIndex], array[currentIndex]];
 	}
-  
 	return array;
-  }
+}
+
+export class MapWithDefault<K, V> extends Map<K, V> {
+	getDefaultValue: () => V;
+
+	constructor(getDefaultValue: () => V) {
+		super();
+		this.getDefaultValue = getDefaultValue;
+	}
+
+	get(key: K): V {
+		let val = super.get(key);
+		return val ?? this.getDefaultValue();
+	}
+}
 
 export const RANDOMNAMES = [
 	"linkdeny",

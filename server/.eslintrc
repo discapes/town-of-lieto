@@ -13,7 +13,7 @@
         "ecmaVersion": "latest"
     },
     "rules": {
-        "no-unused-vars": "off",
+        "no-unused-vars": "warn",
         "no-console": "off",
         "quotes": [ "error", "double", {
                 "avoidEscape": true,
