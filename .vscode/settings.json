@@ -1,4 +1,14 @@
 {
-    "files.eol": "\n",
-    "editor.insertSpaces": false,
+	// "eslint.workingDirectories": [
+	// 	"./site",
+	// 	"./server"
+	// ],
+	"git.enableSmartCommit": true,
+	"git.confirmSync": false,
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"eslint.format.enable": true,
+	"[javascript]": {
+		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
+	},
+	"editor.insertSpaces": false,
 }

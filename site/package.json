@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "server": "cross-env NODE_ENV=dev nodemon --inspect --watch server server/index.mjs",
     "dev": "next dev",
     "build": "next build",
-    "nextstart": "next start",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
