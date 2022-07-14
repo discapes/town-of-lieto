@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { formatHHMMSS, useExtendedState } from "../lib/util";
 import cn from 'classnames';
+import Head from "next/head";
 
-const url = "ws://lieto1.miikat.dev:2053";
+const url = "wss://lieto1.miikat.dev:2053";
 
 function escapeHTML(unsafe) {
     return unsafe
@@ -76,7 +77,6 @@ export default function Component() {
     };
     useEffect(() => {
         const tf = textFieldRef.current;
-        console.log("%s, %s, %s", tf.scrollHeight - tf.scrollTop - tf.clientHeight, tf.clientHeight);
         if (tf.scrollHeight - tf.scrollTop - tf.clientHeight > tf.clientHeight - 100) return;
         tf.scrollTop = tf.scrollHeight;
     }, [finalText]);
@@ -106,6 +106,9 @@ export default function Component() {
     }
 
     return <div className="flex flex-col gap-3 items-start">
+        <Head>
+            <title>Play - Town of Lieto</title>
+        </Head>
         <pre>{timer}</pre>
         <pre className={cn({ ['hidden']: !text }) + " overflow-x-hidden w-[400px] whitespace-pre-wrap overflow-y-scroll block max-w-[400px] max-h-[400px] min-h-[200px] bg-sky-700 p-2"} ref={textFieldRef} dangerouslySetInnerHTML={{ __html: finalText }}>
         </pre>
