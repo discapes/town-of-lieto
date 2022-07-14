@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { formatHHMMSS, useExtendedState } from "../lib/util";
 import cn from 'classnames';
 
-const url = "ws://127.0.0.1:8000";
+const url = "ws://lieto1.miikat.dev:2053";
 
 function escapeHTML(unsafe) {
     return unsafe
