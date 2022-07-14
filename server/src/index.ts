@@ -1,10 +1,18 @@
 import "dotenv/config";
+import { readFileSync } from 'fs';
+import { createServer } from 'https';
 import { WebSocket, WebSocketServer } from "ws";
 import { getUniqueID, requiredNum, requiredBool } from "./util.js";
 import MafiaGame, { Game } from "./game.js";
+import { homedir } from "os";
 
-const port = 8000;
-const wss = new WebSocketServer({ port });
+const port = 2053;
+const server = createServer({
+	cert: readFileSync(homedir() + '/cert.pem'),
+	key: readFileSync(homedir() + '/privkey.pem')
+});
+const wss = new WebSocketServer({ server });
+
 const clients = new WeakSet(); // redundancy so we never get "shadow" clients or games
 const games = new WeakSet();
 let que: Client[] = [];
@@ -111,4 +119,5 @@ wss.on("close", () => {
 	clearInterval(interval);
 });
 
+server.listen(port);
 console.log(`Listening and initialized on port ${port}`);
